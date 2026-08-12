@@ -35,7 +35,8 @@ jobs:
             libtinfo6 \
             cmake \
             libffi-dev \
-            libssl-dev
+            libssl-dev \
+            android-sdk-aidl
 
       - name: Install Buildozer and Cython
         run: |
@@ -44,6 +45,8 @@ jobs:
 
       - name: Build APK
         run: |
+          # این دستور کمک می‌کند که مسیرهای اندروید بهتر شناسایی شوند
+          export PATH=$PATH:$HOME/.buildozer/android/platform/android-sdk/tools/bin
           buildozer -v android debug
 
       - name: Upload APK
