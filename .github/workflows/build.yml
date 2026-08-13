@@ -21,7 +21,8 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential git python3-dev ffmpeg libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev libportmidi-dev libswscale-dev libavformat-dev libavcodec-dev zlib1g-dev libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-doc gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio libsqlite3-dev sqlite3 bzip2 libbz2-dev libssl-dev openssl libffi-dev liblzma-dev
+          # اصلاح لیست پکیج‌ها: حذف gstreamer1.0-doc و استفاده از پکیج‌های استاندارد
+          sudo apt-get install -y build-essential git python3-dev ffmpeg libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev libportmidi-dev libswscale-dev libavformat-dev libavcodec-dev zlib1g-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio libsqlite3-dev sqlite3 bzip2 libbz2-dev libssl-dev openssl libffi-dev liblzma-dev
 
       - name: Install Java 17
         uses: actions/setup-java@v4
@@ -50,7 +51,7 @@ jobs:
           mkdir -p $HOME/.buildozer/android/platform/android-sdk/tools/bin
           ln -s $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/* $HOME/.buildozer/android/platform/android-sdk/tools/bin/
 
-          # نصب اجزای اصلی اندروید با استفاده از مسیر مستقیم برای اطمینان
+          # نصب اجزای اصلی اندروید با استفاده از مسیر مستقیم
           export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
           export PATH=$JAVA_HOME/bin:$PATH
           yes | $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=$HOME/.buildozer/android/platform/android-sdk "platform-tools" "build-tools;34.0.0" "platforms;android-34"
@@ -60,7 +61,7 @@ jobs:
           # تنظیم مجدد مسیر جاوا برای محیط بیلد
           export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
           export PATH=$JAVA_HOME/bin:$PATH
-          # اجرای بیلد (می‌تواند زمان‌بر باشد)
+          # اجرای بیلد
           buildozer android debug
 
       - name: Upload APK
