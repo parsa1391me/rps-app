@@ -21,7 +21,6 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          # اصلاح لیست پکیج‌ها: حذف gstreamer1.0-doc و استفاده از پکیج‌های استاندارد
           sudo apt-get install -y build-essential git python3-dev ffmpeg libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev libportmidi-dev libswscale-dev libavformat-dev libavcodec-dev zlib1g-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio libsqlite3-dev sqlite3 bzip2 libbz2-dev libssl-dev openssl libffi-dev liblzma-dev
 
       - name: Install Java 17
@@ -37,31 +36,34 @@ jobs:
 
       - name: Setup Android SDK and fix paths
         run: |
+          # پیدا کردن مسیر خودکار جاوا (حل مشکل Invalid Directory)
+          export JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:bin/java::")
+          echo "Detected JAVA_HOME: $JAVA_HOME"
+          
           # ایجاد ساختار پوشه‌های مورد نیاز برای SDK
           mkdir -p $HOME/.buildozer/android/platform/android-sdk/cmdline-tools
           
-          # دانلود cmdline-tools از گوگل
+          # دانلود cmdline-tools
           wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdline-tools.zip
           unzip -q cmdline-tools.zip -d $HOME/.buildozer/android/platform/android-sdk/cmdline-tools
           
-          # مرتب‌سازی پوشه‌ها برای استاندارد گوگل (بسیار حیاتی)
+          # مرتب‌سازی پوشه‌ها
           mv $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/cmdline-tools $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest
           
-          # فریب دادن Buildozer: ایجاد میانبر (Symlink) در مسیری که او به دنبال آن است
+          # ایجاد Symlink برای Buildozer
           mkdir -p $HOME/.buildozer/android/platform/android-sdk/tools/bin
           ln -s $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/* $HOME/.buildozer/android/platform/android-sdk/tools/bin/
 
-          # نصب اجزای اصلی اندروید با استفاده از مسیر مستقیم
-          export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
-          export PATH=$JAVA_HOME/bin:$PATH
-          yes | $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=$HOME/.buildozer/android/platform/android-sdk "platform-tools" "build-tools;34.0.0" "platforms;android-34"
+          # نصب اجزای اصلی اندروید با استفاده از متد امن‌تر (بدون yes pipe)
+          export PATH=$JAVA_HOME/bin:$HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin:$PATH
+          
+          # اجرای sdkmanager با پارامتر تایید خودکار
+          $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=$HOME/.buildozer/android/platform/android-sdk "platform-tools" "build-tools;34.0.0" "platforms;android-34" --noautodelete --noanalytics
 
       - name: Build APK with Buildozer
         run: |
-          # تنظیم مجدد مسیر جاوا برای محیط بیلد
-          export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+          export JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:bin/java::")
           export PATH=$JAVA_HOME/bin:$PATH
-          # اجرای بیلد
           buildozer android debug
 
       - name: Upload APK
