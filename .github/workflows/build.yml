@@ -36,8 +36,9 @@ jobs:
 
       - name: Setup Android SDK and fix paths
         run: |
-          # پیدا کردن مسیر خودکار جاوا (حل مشکل Invalid Directory)
+          # پیدا کردن مسیر خودکار جاوا
           export JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:bin/java::")
+          export PATH=$JAVA_HOME/bin:$PATH
           echo "Detected JAVA_HOME: $JAVA_HOME"
           
           # ایجاد ساختار پوشه‌های مورد نیاز برای SDK
@@ -47,18 +48,18 @@ jobs:
           wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdline-tools.zip
           unzip -q cmdline-tools.zip -d $HOME/.buildozer/android/platform/android-sdk/cmdline-tools
           
-          # مرتب‌سازی پوشه‌ها
+          # مرتب‌سازی پوشه‌ها برای استاندارد گوگل
           mv $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/cmdline-tools $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest
           
           # ایجاد Symlink برای Buildozer
           mkdir -p $HOME/.buildozer/android/platform/android-sdk/tools/bin
           ln -s $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/* $HOME/.buildozer/android/platform/android-sdk/tools/bin/
 
-          # نصب اجزای اصلی اندروید با استفاده از متد امن‌تر (بدون yes pipe)
-          export PATH=$JAVA_HOME/bin:$HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin:$PATH
+          # مسیر مستقیم برای sdkmanager
+          export SDK_MANAGER=$HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager
           
-          # اجرای sdkmanager با پارامتر تایید خودکار
-          $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=$HOME/.buildozer/android/platform/android-sdk "platform-tools" "build-tools;34.0.0" "platforms;android-34" --noautodelete --noanalytics
+          # نصب پکیج‌ها با تایید خودکار لایسنس‌ها (روش امن و ساده)
+          yes | $SDK_MANAGER --sdk_root=$HOME/.buildozer/android/platform/android-sdk "platform-tools" "build-tools;34.0.0" "platforms;android-34"
 
       - name: Build APK with Buildozer
         run: |
